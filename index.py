@@ -1,4 +1,5 @@
-from util.records import get_new_rec_offset, write_into_files, write_game_count, get_game_count, delete
+from util.records import get_new_rec_offset, write_into_files, write_game_count, get_game_count
+
 
 class Games:
 
@@ -16,8 +17,8 @@ class Games:
 
     def __str__(self):
         return "\nName : "+self.name+"\nGenre : "+self.genre+"\nPlatforms supported : "+self.pf+"\nDescription : "\
-               +self.desc+"\nDeveloper : " \
-              +self.dev+ "\nPublisher : " + self.pub+"\nRelease Date : "+self.r_date
+               + self.desc+"\nDeveloper : " \
+            + self.dev + "\nPublisher : " + self.pub+"\nRelease Date : "+self.r_date
 
     @staticmethod
     def get_offsets(rrn):
@@ -33,8 +34,8 @@ class Games:
 
     @staticmethod
     def open_files(mode):
-        file = open("./text files/g_name.txt", mode)  
-        i_file = open("./text files/index.txt", mode)  
+        file = open("./text files/g_name.txt", mode)
+        i_file = open("./text files/index.txt", mode)
         sec_file = open("./text files/sec_index.txt", mode)
 
         return [file, i_file, sec_file]
@@ -55,7 +56,11 @@ class Games:
             g_name = [val.strip() for val in temp]
 
             if g_name[1][0] != "$":
-                game_obj = Games(g_name[1], g_name[2], g_name[3], g_name[4],g_name[5], g_name[6], g_name[7])
+                g_name[7] = g_name[7][0:g_name[7].index(
+                    "%")] if "%" in g_name[7] else g_name[7]
+                print(g_name[7])
+                game_obj = Games(
+                    g_name[1], g_name[2], g_name[3], g_name[4], g_name[5], g_name[6], g_name[7])
                 print('Game found')
                 print(game_obj)
                 return game_obj
@@ -65,18 +70,21 @@ class Games:
         Games.close_files([file, i_file, sec_file])
 
     @staticmethod
-    def check_for_duplicate_by_name(name):  # returns 1 if the game name is already there else 0
+    # returns 1 if the game name is already there else 0
+    def check_for_duplicate_by_name(name):
         name_file = open("./text files/g_name.txt", "r")
         records = name_file.readlines()
-        #print(records)
+        # print(records)
         if records != []:
-            name_arr = [record.strip().split('|')[1].strip().lower() for record in records]
+            name_arr = [record.strip().split('|')[1].strip().lower()
+                        for record in records]
             return 1 if name.lower().strip() in name_arr else 0
         else:
             return 0
 
     @staticmethod
-    def check_for_duplicate_by_rrn(rrn):  # returns 1 if the game name is already there else 0
+    # returns 1 if the game name is already there else 0
+    def check_for_duplicate_by_rrn(rrn):
         i_file = open("./text files/index.txt", "r")
         records = i_file.readlines()
         rrns = [int(record.split('|')[0]) for record in records]
@@ -84,10 +92,10 @@ class Games:
 
     def pack(self):
 
-        if Games.mode == 1:
+        if Games.mode == 1:  # append
             file,  i_file, sec_file = Games.open_files("a")
 
-        elif Games.mode == 0:
+        elif Games.mode == 0:  # write
             file,  i_file, sec_file = Games.open_files("w")
 
         if(not file) or (not i_file) or (not sec_file):
@@ -96,7 +104,8 @@ class Games:
         else:
 
             rrn = str(Games.count+1)
-            g_name_rec = "|"+self.name+"|"+self.genre+"|"+self.pf+"|"+self.desc+"|"+self.dev+"|"+self.pub+"|"+self.r_date+"\n"
+            g_name_rec = "|"+self.name+"|"+self.genre+"|"+self.pf+"|" + \
+                self.desc+"|"+self.dev+"|"+self.pub+"|"+self.r_date+"\n"
             sec_index_rec = rrn + "|" + self.name+"\n"
             i_rec = rrn + "|0\n"
 
@@ -111,6 +120,67 @@ class Games:
             write_game_count(Games.count)
             Games.close_files(files_arr)
 
+    @staticmethod
+    def delete(name):
+
+        i = -1
+
+        file = open("./text files/g_name.txt", "r")
+        i_file = open("./text files/index.txt", "r")
+        sec_file = open("./text files/sec_index.txt", "r")
+
+        # get all the records form the secondary index file
+        records = sec_file.readlines()
+        all_games = [record.strip().split('|')[1].strip().lower()
+                     for record in records]
+        rrns = [record.strip().split('|')[0].strip().lower()
+                for record in records]
+
+        # get the rrn of the record to be deleted from the secondary index file
+        if name in all_games:
+            drec_index = all_games.index(name)
+            drec_rrn = int(rrns[drec_index])
+
+        # get the offsets from the index file using the rrn
+        name_offset = 0
+        lines = i_file.readlines()
+        rrns = [int(line.split('|')[0]) for line in lines]
+
+        # get offset of the record to be deleted
+        if drec_rrn in rrns:
+            i = rrns.index(drec_rrn)
+            offset = [int(line.split('|')[1]) for line in lines][i]
+        else:
+            print("Record's RRN is not in the list of RRNs \n")
+
+        name_recs = file.readlines()
+        file.seek(offset, 0)
+        dname_rec = file.readline()
+        file.close()
+
+        dgame_index = name_recs.index(dname_rec)
+        name_recs[dgame_index] = "$" + name_recs[dgame_index][1:]
+        file = open("./text files/g_name.txt", "w")
+
+        file.writelines(name_recs)
+
+        i_file.close()
+        sec_file.close()
+
+        i_file = open("./text files/index.txt", "w")  #
+        sec_file = open("./text files/sec_index.txt", "w")
+
+        lines.remove(lines[i])
+        i_file.writelines(lines)
+
+        records.remove(records[drec_index])
+        sec_file.writelines(records)
+
+        i_file.close()
+        sec_file.close()
+
+        #print("Game has been deleted successfully")
+
     def modify(self, rrn):
 
         name_offset = Games.get_offsets(rrn)
@@ -124,7 +194,6 @@ class Games:
         g_name_len = len(game_record)
         game_name = game_record.split("|")[1]
 
-
         name = input("Enter the name of the game: \n")
         gen = input("Enter the genre of the game : \n")
         pf = input("Enter the platforms supported by the game : \n")
@@ -136,20 +205,27 @@ class Games:
         g_name_mod = "|"+name+"|"+gen+"|"+pf+"|"+desc+"|"+dev+"|"+pub+"|"+r_date
         g_name_mod_len = len(g_name_mod)
 
-        if g_name_mod_len>g_name_len:
-            delete(self.name)
+        if g_name_mod_len > g_name_len:
+
+            # Delete the old record and just enter a new record into the file
+
+            Games.delete(self.name)
             game_obj = Games(name, gen, pf, desc, dev, pub, r_date)
             game_obj.pack()
 
         else:
+
+            # Replace the old record with the new record if it's length is less than the old record's length
+
             Games.close_files([file, i_file, sec_file])
-            file = open("./text files/g_name.txt", "w")  
+            file = open("./text files/g_name.txt", "w")
             sec_file = open("./text files/sec_index.txt", "w")
 
-            # Write the modified record in place of the old record 
-            
+            # Write the modified record in place of the old record
+
             index = all_game_records.index(game_record)
-            all_game_records[index] = g_name_mod+"%"+all_game_records[index][g_name_mod_len+1:]
+            all_game_records[index] = g_name_mod+"%" + \
+                all_game_records[index][g_name_mod_len+1:]
             file.writelines(all_game_records)
 
             # Write the modified name in the secondary index file
@@ -160,6 +236,7 @@ class Games:
             sec_file.writelines(sindex_records)
 
         Games.close_files([file, i_file, sec_file])
+
 
 def main():
     y = 'y'
@@ -188,7 +265,7 @@ def main():
         pub = input("Enter the publisher's name for the game : \n")
         r_date = input("Enter the release date for the game : \n")
 
-        if name and gen and pf and desc and dev and pub and r_date :
+        if name and gen and pf and desc and dev and pub and r_date:
             game_obj = Games(name, gen, pf, desc, dev, pub, r_date)
             game_obj.pack()
         else:
@@ -199,16 +276,18 @@ def main():
 
         y = input("Would you like to enter another game: (y\\n)\n")
 
+    # delete
     name = input("Enter the name of the game to be deleted : ")
     if name != "n":
         if Games.check_for_duplicate_by_name(name):
-            delete(name) 
+            Games.delete(name)
             print("Deleted successfully\n")
         else:
             print("Game not found")
     else:
         print("Deletion cancelled\n")
 
+    # modification
     rrn = input("Enter the rrn of the game to modify : ")
     if rrn != 'n':
         rrn = int(rrn)
@@ -218,11 +297,8 @@ def main():
             if confirm == "y":
                 game_obj.modify(rrn)
                 print("Record modified successfully \n")
-            else: 
+            else:
                 print("Modification cancelled\n")
-
-    else:
-        print("End of program")
 
 
 if __name__ == "__main__":
