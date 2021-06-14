@@ -1,0 +1,10 @@
+user.txt - username and password
+admin.txt - admin 
+purchases.txt username|game name 
+
+user field in the game_name.txt
+
+
+name|desc|......|date|
+
+game name | username 

@@ -1,5 +1,26 @@
-from os import error
+
+from frontend.app import app, login_manager
 from util.records import get_new_rec_offset, write_into_files, write_game_count, get_game_count
+from flask_login import UserMixin
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return Users.get(user_id)
+
+
+# check for duplicate games
+
+def check_duplicate_games(user_id, game_name):
+    with open("./text files/purchases.txt", "r") as file:
+        purchases = file.readlines()
+        owned_games = []
+        for record in purchases:
+            if record.split("|")[0] == str(user_id):
+                owned_games.append(record.split("|")[1].strip())
+        if game_name in owned_games:
+            return True
+        return False
 
 
 class Games:
@@ -7,7 +28,7 @@ class Games:
     mode = 1
     count = 0
 
-    def __init__(self, name, genre, pf, desc, dev, pub, r_date):
+    def __init__(self, name, genre, pf, desc, pub, r_date):
         self.name = name
         self.genre = genre
         self.pf = pf
@@ -17,8 +38,7 @@ class Games:
 
     def __str__(self):
         return "\nName : "+self.name+"\nGenre : "+self.genre+"\nPlatforms supported : "+self.pf+"\nDescription : "\
-               + self.desc+"\nDeveloper : " \
-            + self.dev + "\nPublisher : " + self.pub+"\nRelease Date : "+self.r_date
+               + self.desc + "\nPublisher : " + self.pub+"\nRelease Date : "+self.r_date
 
     @staticmethod
     def get_offsets(rrn):
@@ -56,11 +76,11 @@ class Games:
             g_name = [val.strip() for val in temp]
 
             if g_name[1][0] != "$":
-                g_name[7] = g_name[7][0:g_name[7].index(
-                    "%")] if "%" in g_name[7] else g_name[7]
-                print(g_name[7])
+                g_name[6] = g_name[6][0:g_name[6].index(
+                    "%")] if "%" in g_name[6] else g_name[6]
+                # print(g_name[7])
                 game_obj = Games(
-                    g_name[1], g_name[2], g_name[3], g_name[4], g_name[5], g_name[6], g_name[7])
+                    g_name[1], g_name[2], g_name[3], g_name[4], g_name[5], g_name[6])
                 print('Game found')
                 return game_obj
         else:
@@ -89,6 +109,28 @@ class Games:
         rrns = [int(record.split('|')[0]) for record in records]
         return 1 if rrn in rrns else 0
 
+    @staticmethod
+    def get_all_games():
+        games_obj_arr = []
+        with open("./text files/g_name.txt", "r") as games_file:
+            all_games = games_file.readlines()
+            for game in all_games:
+                if game[0] != "$":
+                    temp = game.strip().split("|")
+                    game_obj = Games(
+                        temp[1], temp[2], temp[3], temp[4], temp[5], temp[6])
+                    games_obj_arr.append(game_obj)
+                else:
+                    continue
+
+        return games_obj_arr
+
+    @staticmethod
+    def purchase_game(game_name, user_obj):
+        with open("./text files/purchases.txt", "a") as file:
+            purchase_rec = str(user_obj.id)+"|"+game_name+"\n"
+            file.write(purchase_rec)
+
     def pack(self):
 
         if Games.mode == 1:  # append
@@ -104,7 +146,7 @@ class Games:
 
             rrn = str(Games.count+1)
             g_name_rec = "|"+self.name+"|"+self.genre+"|"+self.pf+"|" + \
-                self.desc+"|"+self.dev+"|"+self.pub+"|"+self.r_date+"\n"
+                self.desc+"|"+self.pub+"|"+self.r_date+"\n"
             sec_index_rec = rrn + "|" + self.name+"\n"
             i_rec = rrn + "|0\n"
 
@@ -180,7 +222,7 @@ class Games:
 
         #print("Game has been deleted successfully")
 
-    def modify(self, rrn):
+    def modify(self, rrn, info_arr):
 
         name_offset = Games.get_offsets(rrn)
         file, i_file, sec_file = Games.open_files("r")
@@ -193,15 +235,9 @@ class Games:
         g_name_len = len(game_record)
         game_name = game_record.split("|")[1]
 
-        name = input("Enter the name of the game: \n")
-        gen = input("Enter the genre of the game : \n")
-        pf = input("Enter the platforms supported by the game : \n")
-        desc = input("Enter the description for the game : \n")
-        dev = input("Enter the developer's name for the game : \n")
-        pub = input("Enter the publisher's name for the game : \n")
-        r_date = input("Enter the release date for the game : \n")
+        name, gen, pf, desc, pub, r_date = info_arr
 
-        g_name_mod = "|"+name+"|"+gen+"|"+pf+"|"+desc+"|"+dev+"|"+pub+"|"+r_date
+        g_name_mod = "|"+name+"|"+gen+"|"+pf+"|"+desc+"|"+pub+"|"+r_date
         g_name_mod_len = len(g_name_mod)
 
         if g_name_mod_len > g_name_len:
@@ -209,7 +245,7 @@ class Games:
             # Delete the old record and just enter a new record into the file
 
             Games.delete(self.name)
-            game_obj = Games(name, gen, pf, desc, dev, pub, r_date)
+            game_obj = Games(name, gen, pf, desc, pub, r_date)
             game_obj.pack()
 
         else:
@@ -237,47 +273,82 @@ class Games:
         Games.close_files([file, i_file, sec_file])
 
 
-# fmode = mode in which the file should be opened n - write mode y -append mode
-# op = operation to be performed on the file add, display, delete and modify
-# data = can be an array of the necessary values for add op, or name for del or rrn for the modify
+class Users(UserMixin):
 
+    user_count = 0
 
-def main(fmode, op, data):
-    y = 'y'
-    if fmode == "n":
-        write_game_count(0)
-        Games.count = 0
-        Games.mode = 0  # write mode
-    else:
-        Games.mode = 1  # append mode
-        Games.count = get_game_count()
+    def __init__(self, id, username, password):
+        self.id = id
+        self.username = username
+        self.password = password
 
-    if op == "add":
+    def pack(self):
+        user_rec = str(self.id)+"|"+self.username.lower() + \
+            "|"+self.password + "\n"
+        with open("./text files/users.txt", "a") as user_file:
+            user_file.write(user_rec)
+            Users.user_count = Users.user_count + 1
+            with open("./text files/user_count.txt", "w") as count_file:
+                count_file.write(str(Users.user_count))
+            return 1
 
-        name, gen, pf, desc, pub, r_date = data
-        if name and gen and pf and desc and pub and r_date:
-            game_obj = Games(name, gen, pf, desc, pub, r_date)
-            game_obj.pack()
-        else:
-            raise Exception("Game details cannot be empty\n")
+    @staticmethod
+    def get_count():
+        with open("./text files/user_count.txt", "r") as file:
+            temp = file.readline()
+            new_id = int(temp) if temp else 1
+            Users.user_count = new_id
+        return new_id
 
-    # delete
-    elif op == "del":
-        if Games.check_for_duplicate_by_name(data):
-            Games.delete(data)
-            print("Deleted successfully\n")
-        else:
-            raise Exception("Game not found\n")
+    @staticmethod
+    def check_username(username):
+        with open("./text files/users.txt", "r") as user_file:
+            records = user_file.readlines()
+            usernames = [record.split("|")[1] for record in records]
+            if username in usernames:
+                return True
+            else:
+                return False
 
-    # modification
-    elif op == "mod":
-        rrn = data[0]
-        if Games.check_for_duplicate_by_rrn(rrn):
-            game_obj = Games.get(rrn)
-            game_obj.modify(rrn)
-            print("Record modified successfully \n")
-        else:
-            raise Exception("Game not found\n")
+    @staticmethod
+    def check_password(username, password):
+        with open("./text files/users.txt", "r") as user_file:
+            records = user_file.readlines()
+            usernames = [record.split("|")[1] for record in records]
+            if username.lower() in usernames:
+                index = usernames.index(username.lower())
+                pw = [record.split("|")[2] for record in records][index]
+                if password == pw:
+                    return True
+                else:
+                    raise Exception(pw, password)
+                    return False
+            else:
+                raise Exception(usernames, username)
 
-    else:
-        raise Exception("Invalid operation\n")
+    @staticmethod
+    def get(user_id):
+        user_id = int(user_id)
+        with open("./text files/users.txt", "r") as user_file:
+            records = user_file.readlines()
+            userids = [int(record.split("|")[0]) for record in records]
+            if user_id in userids:
+                index = userids.index(user_id)
+                password = [record.split("|")[0] for record in records][index]
+                username = [record.split("|")[1] for record in records][index]
+                return Users(user_id, username, password)
+            else:
+                return None
+
+    @staticmethod
+    def get_user_by_name(username):
+        with open("./text files/users.txt", "r") as user_file:
+            records = user_file.readlines()
+            usernames = [record.split("|")[1] for record in records]
+            if username in usernames:
+                index = usernames.index(username)
+                password = [record.split("|")[2] for record in records][index]
+                user_id = [record.split("|")[0] for record in records][index]
+                return Users(user_id, username, password)
+            else:
+                return None

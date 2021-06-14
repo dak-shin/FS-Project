@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title%}
+Login page
+{% endblock %}
+
+{%block content %}
+<div class="container col-4" style="padding:2rem;margin-top: 2rem; border: 1px #3b3b3b solid; border-radius: 0.5rem;">
+    <h4>Login : </h4>
+    <br>
+
+    <form method="POST" class="form-register" style="color:white">
+        {{ form.hidden_tag() }}
+        {{ form.username.label()}}
+        {{ form.username(class="form-control", placeholder="Dwight") }}
+
+        {{ form.password.label()}}
+        {{ form.password(class="form-control",placeholder="Schrute Farms") }}
+        <br>
+        <h6>Don't have an account?
+            <a href="{{url_for('register_page')}}">Register Now</a>
+        </h6>
+        <br>
+        {{ form.submit(class="btn btn-lg btn-block btn-primary") }}
+    </form>
+
+</div>
+
+{% endblock%}

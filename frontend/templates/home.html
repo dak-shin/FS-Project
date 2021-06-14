@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Home
+{% endblock %}
+
+{% block content %}
+<div class="card myhomecard">
+    <div class="card-body">
+        <h5 class="card-title">Hello There</h5>
+        <p class="card-text">
+            Looking to buy some games, Then wait no more
+        </p>
+        <a href="{{url_for( 'market_page')}}" class="btn btn-primary">Get Started</a>
+    </div>
+</div>
+
+
+{% endblock %}

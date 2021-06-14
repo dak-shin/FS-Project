@@ -1,0 +1,55 @@
+<!-- Button trigger modal -->
+
+<!-- Modal -->
+<div class="modal fade mymodal" id="Modal-MoreInfo-{{ item.id }}" tabindex="-1" aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">{{ item.name }}</h5>
+                <button type="button" class="btn-dark btn" data-dismiss="modal" aria-label="Close">
+                    &times;
+                </button>
+            </div>
+            <div class="modal-body">
+                {{ item.desc}}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade mymodal" id="Modal-BuyConfirm-{{ item.name.replace(' ','_') }}" tabindex="-1"
+    aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">{{ item.name }}</h5>
+                <button type="button" class="btn-dark btn" data-dismiss="modal" aria-label="Close">
+                    &times;
+                </button>
+            </div>
+            <div class="modal-body">
+                <form method="POST">
+                    {{ purchase_form.hidden_tag() }}
+                    <h4>
+                        Are you sure you want to buy {{ item.name }}?
+                    </h4>
+                    <br>
+                    <h6>By clicking purchase, you will be buying the item </h6>
+                    <br>
+                    <input type="hidden" name="purchased_item" id="purchased_item"
+                        value="{{ item.name.replace(' ','_') }}">
+                    {{ purchase_form.submit( class="btn btn-outline-success btn-block")}}
+                </form>
+            </div>
+            <div class="modal-footer">
+
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
