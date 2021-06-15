@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Library
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-10">
+        <h3>Library</h3>
+        <br>
+        <div class="container">
+            {% if items %}
+            <table class="table table-striped table-hover table-bordered">
+                <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Name</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    {% for item in items %}
+                    <tr>
+                        <th scope="row" style="color: white;">{{ items.index(item)+1 }}</th>
+                        <td style="color: white;">{{ item.split("|")[1] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <h5> There are no games in your library...Check them out at <a style="text-decoration: none; "
+                    href="{{url_for('market_page')}}">Market</a>
+            </h5>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

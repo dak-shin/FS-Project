@@ -41,8 +41,7 @@
                     <br>
                     <h6>By clicking purchase, you will be buying the item </h6>
                     <br>
-                    <input type="hidden" name="purchased_item" id="purchased_item"
-                        value="{{ item.name.replace(' ','_') }}">
+                    <input type="hidden" name="purchased_item" id="purchased_item" value="{{ item.name }}">
                     {{ purchase_form.submit( class="btn btn-outline-success btn-block")}}
                 </form>
             </div>

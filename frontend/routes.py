@@ -19,8 +19,7 @@ def market_page():
 
     if request.method == "POST":
         if purchase_form.validate_on_submit():
-            purchased_item = request.form.get(
-                'purchased_item').replace('_', ' ')
+            purchased_item = request.form.get('purchased_item')
             if check_duplicate_games(current_user.id, purchased_item):
                 flash(
                     f"{purchased_item} already exists in your library!!", category="danger")
@@ -82,3 +81,11 @@ def logout_page():
     logout_user()
     flash('Logged out successfully', category='info')
     return redirect(url_for('home_page'))
+
+
+@app.route("/library")
+@login_required
+def library_page():
+    items = Games.get_owned_games(current_user.id)
+    # print(list(items))
+    return render_template("library.html", active_lib="active", items=list(items))

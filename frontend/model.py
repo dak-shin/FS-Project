@@ -28,17 +28,19 @@ class Games:
     mode = 1
     count = 0
 
-    def __init__(self, name, genre, pf, desc, pub, r_date):
+    def __init__(self, name, genre, pf, desc, pub, r_date, price):
         self.name = name
         self.genre = genre
         self.pf = pf
         self.desc = desc
+        self.price = price
         self.pub = pub
         self.r_date = r_date
 
     def __str__(self):
         return "\nName : "+self.name+"\nGenre : "+self.genre+"\nPlatforms supported : "+self.pf+"\nDescription : "\
-               + self.desc + "\nPublisher : " + self.pub+"\nRelease Date : "+self.r_date
+               + self.desc + "\nPublisher : " + self.pub + \
+            "\nRelease Date : "+self.r_date+"\nPrice : "+self.price
 
     @staticmethod
     def get_offsets(rrn):
@@ -76,11 +78,11 @@ class Games:
             g_name = [val.strip() for val in temp]
 
             if g_name[1][0] != "$":
-                g_name[6] = g_name[6][0:g_name[6].index(
-                    "%")] if "%" in g_name[6] else g_name[6]
+                g_name[7] = g_name[7][0:g_name[7].index(
+                    "%")] if "%" in g_name[7] else g_name[7]
                 # print(g_name[7])
                 game_obj = Games(
-                    g_name[1], g_name[2], g_name[3], g_name[4], g_name[5], g_name[6])
+                    g_name[1], g_name[2], g_name[3], g_name[4], g_name[5], g_name[6], g_name[7])
                 print('Game found')
                 return game_obj
         else:
@@ -118,7 +120,7 @@ class Games:
                 if game[0] != "$":
                     temp = game.strip().split("|")
                     game_obj = Games(
-                        temp[1], temp[2], temp[3], temp[4], temp[5], temp[6])
+                        temp[1], temp[2], temp[3], temp[4], temp[5], temp[6], temp[7])
                     games_obj_arr.append(game_obj)
                 else:
                     continue
@@ -130,6 +132,21 @@ class Games:
         with open("./text files/purchases.txt", "a") as file:
             purchase_rec = str(user_obj.id)+"|"+game_name+"\n"
             file.write(purchase_rec)
+
+    @staticmethod
+    def get_owned_games(user_id):
+
+        def get_the_game(rec):
+            id = rec.split("|")[0]
+            return True if user_id == int(id) else False
+
+        with open("./text files/purchases.txt", "r") as file:
+            purchases = file.readlines()
+            # print(purchases)
+            game_name_arr = filter(get_the_game, purchases)
+            # print(list(game_name_arr))
+
+        return game_name_arr
 
     def pack(self):
 
@@ -146,7 +163,7 @@ class Games:
 
             rrn = str(Games.count+1)
             g_name_rec = "|"+self.name+"|"+self.genre+"|"+self.pf+"|" + \
-                self.desc+"|"+self.pub+"|"+self.r_date+"\n"
+                self.desc+"|"+self.pub+"|"+self.r_date+"|"+self.price+"\n"
             sec_index_rec = rrn + "|" + self.name+"\n"
             i_rec = rrn + "|0\n"
 
@@ -237,10 +254,11 @@ class Games:
 
         name, gen, pf, desc, pub, r_date = info_arr
 
-        g_name_mod = "|"+name+"|"+gen+"|"+pf+"|"+desc+"|"+pub+"|"+r_date
+        g_name_mod = "|"+name+"|"+gen+"|"+pf+"|" + \
+            desc+"|"+pub+"|"+r_date+"|"+self.price
         g_name_mod_len = len(g_name_mod)
 
-        if g_name_mod_len > g_name_len:
+        if g_name_mod_len+2 > g_name_len:
 
             # Delete the old record and just enter a new record into the file
 
