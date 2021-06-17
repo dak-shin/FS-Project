@@ -1,7 +1,7 @@
-{% extends "base.html" %}
+{% extends 'base2.html' %}
 
-{% block title %}
-Market
+{% block title%}
+Home
 {% endblock %}
 
 {% block content %}
@@ -14,9 +14,20 @@ Market
         <br>
         <div class="container">
             <div class="row g-2">
+                <div class="col-6 ">
+                    {% include 'includes/owned_items_modals.html' %}
+                    <div class="card d-flex align-items-center justify-content-around"
+                        style="width: 25rem; height:25rem; color: black; margin: 1rem;">
+                        <i class="fas fa-plus fa-5x"></i>
+                        <button type="button" class="btn btn-outline btn-primary" data-toggle="modal"
+                            data-target="#Modal-AddGame">
+                            Add a new game
+                        </button>
+                    </div>
+                </div>
                 {% for item in items %}
                 <div class="col-6 ">
-                    {% include 'includes/items_modal.html' %}
+
                     <div class="card " style="width: 25rem; color: black; margin: 1rem;">
                         <img src="{{url_for('static', filename=item.name+'.png')}}" class="card-img-top"
                             alt="Game Image">
@@ -34,17 +45,21 @@ Market
                             </li>
                         </ul>
                         <div class="card-body d-flex justify-content-between">
+                            <div>
 
-                            <button type="button" class="btn btn-outline btn-primary" data-toggle="modal"
-                                data-target="#Modal-BuyConfirm-{{ item.name.replace(' ','_') }}">
-                                Buy
-                            </button>
+                                <a href="edit/{{item.name}}" class="btn btn-outline btn-primary">
+                                    Edit
+                                </a>
+                                <a href="edit/{{item.name}}" class="btn btn-outline btn-primary">
+                                    Delete
+                                </a>
+                            </div>
                             <div>
                                 {% for temp in item.pf.split()%}
                                 {% if temp != "PC" %}
-                                <i class="fab fa-{{temp}}"></i>
+                                <i class="fab fa-{{temp}} "></i>
                                 {% else %}
-                                <i class="fas fa-desktop"></i>
+                                <i class="fas fa-desktop "></i>
                                 {% endif %}
                                 {% endfor %}
                             </div>

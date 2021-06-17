@@ -1,24 +1,42 @@
-<div class="modal fade mymodal" id="Modal-SellConfirm-{{ owned_item.id }}" tabindex="-1"
-    aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade mymodal" id="Modal-AddGame" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">{{ owned_item.name }}</h5>
+                <h5 class="modal-title" id="exampleModalLabel">Enter the game details </h5>
                 <button type="button" class="btn-dark btn" data-dismiss="modal" aria-label="Close">
                     &times;
                 </button>
             </div>
+            <br>
+
             <div class="modal-body">
                 <form method="POST">
-                    {{ sell_form.hidden_tag() }}
-                    <h4>
-                        Are you sure you want to sell {{ owned_item.name }} for {{ owned_item.price }} coins?
-                    </h4>
+                    {{ gameform.hidden_tag() }}
+
+                    {{ gameform.name.label() }}
+                    {{ gameform.name(class="form-control")}}
+
+                    {{ gameform.genre.label() }}
+                    {{ gameform.genre(class="form-control")}}
+
+                    {{ gameform.pf.label() }}
+                    {{ gameform.pf()}}
+
+                    {{ gameform.desc.label() }}
+                    {{ gameform.desc(class="form-control")}}
+
+                    {{ gameform.pub.label() }}
+                    {{ gameform.pub(class="form-control")}}
+
+                    {{ gameform.price.label() }}
+                    {{ gameform.price(class="form-control")}}
+
+                    {{ gameform.r_date.label() }}
+                    {{ gameform.r_date(class="form-control")}}
+
+
                     <br>
-                    <h6>By clicking sell, you will be seliing this item </h6>
-                    <br>
-                    <input type="hidden" name="selling_item" id="selling_item" value="{{ owned_item.name }}">
-                    {{ sell_form.submit( class="btn btn-outline-danger btn-block")}}
+                    {{ gameform.submit( class="btn btn-outline-danger btn-block")}}
                 </form>
             </div>
             <div class="modal-footer">

@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField
-from wtforms.validators import Length, EqualTo, Email, DataRequired, ValidationError
-from .model import Users
+from wtforms import widgets, StringField, PasswordField, SubmitField, SelectField, SelectMultipleField, TextAreaField, IntegerField, DateField
+from wtforms.validators import Length, DataRequired, ValidationError
+from .model import Users, Games
 
 
 class RegisterForm(FlaskForm):
@@ -26,3 +26,49 @@ class LoginForm(FlaskForm):
 
 class PurchaseForm(FlaskForm):
     submit = SubmitField(label="Purchase")
+
+
+class MultiCheckboxField(SelectMultipleField):
+    widget = widgets.ListWidget(prefix_label=False)
+    option_widget = widgets.CheckboxInput()
+
+
+class GameForm(FlaskForm):
+
+    def validate_name_field(form, field):
+        if Games.check_for_duplicate_by_name(field.data):
+            raise ValidationError("Game already exists!!")
+
+    name = StringField(label="Name", validators=[
+                       Length(min=2, max=30), DataRequired(), validate_name_field])
+    genre = StringField(label="Genre", validators=[
+                        Length(min=2, max=30), DataRequired()])
+    pf = MultiCheckboxField(label="Platforms Supported", choices=[(
+        "PC", "PC"), ("playstation", "Playstation"), ("xbox", "Xbox")])
+    desc = TextAreaField(label="Description", validators=[
+                         DataRequired(), Length(min=2, max=50)])
+    pub = StringField(label="Publisher", validators=[
+                      DataRequired(), Length(min=2, max=30)])
+    price = IntegerField(label="Price", validators=[DataRequired()])
+    r_date = DateField(label="Release Date", validators=[])
+
+    submit = SubmitField(label="Add Game")
+
+
+class GameEditForm(FlaskForm):
+
+    og_name = StringField(label="og_name")
+    name = StringField(label="Name", validators=[
+                       Length(min=2, max=30), DataRequired()])
+    genre = StringField(label="Genre", validators=[
+                        Length(min=2, max=30), DataRequired()])
+    pf = MultiCheckboxField(label="Platforms Supported", choices=[(
+        "PC", "PC"), ("playstation", "Playstation"), ("xbox", "Xbox")])
+    desc = TextAreaField(label="Description", validators=[
+                         DataRequired(), Length(min=2, max=50)])
+    pub = StringField(label="Publisher", validators=[
+                      DataRequired(), Length(min=2, max=30)])
+    price = IntegerField(label="Price", validators=[DataRequired()])
+    r_date = DateField(label="Release Date", validators=[], format="%Y-%m-%d")
+
+    submit = SubmitField(label="Save Changes")

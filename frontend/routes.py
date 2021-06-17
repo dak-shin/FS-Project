@@ -1,8 +1,8 @@
 from .app import app
 from flask import render_template, redirect, url_for, flash, request
-from .model import Games, Users, check_duplicate_games
+from .model import Games, Users, check_duplicate_games, Admin
 from flask_login import login_user, logout_user, current_user, login_required
-from .forms import RegisterForm, LoginForm, PurchaseForm
+from .forms import RegisterForm, LoginForm, PurchaseForm, GameForm, GameEditForm
 
 
 @app.route("/")
@@ -89,3 +89,74 @@ def library_page():
     items = Games.get_owned_games(current_user.id)
     # print(list(items))
     return render_template("library.html", active_lib="active", items=list(items))
+
+
+@app.route("/admin")
+def admin_page():
+    logout_user()
+    return redirect(url_for('admin_login_page'))
+
+
+@app.route("/admin/login", methods=['GET', 'POST'])
+def admin_login_page():
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = Admin.get_user_by_name(form.username.data)
+        if user and user.password.strip() == form.password.data.strip():
+            print(user.password, form.password.data)
+            login_user(user)
+            flash(
+                f"Logged in Successfully as admin !! Welcome {current_user.username}", category="success")
+            return redirect(url_for('admin_home_page'))
+        else:
+            flash('Invalid credentials, Please try again',
+                  category="danger")
+
+    return render_template('admin_login.html', form=form, active_login="active")
+
+
+@app.route("/admin/home", methods=['GET', "POST"])
+@login_required
+def admin_home_page():
+    gameform = GameForm()
+
+    if request.method == "POST":
+        if gameform.validate_on_submit():  # validates the user input using the validators and then just returns true when the form is submitted
+            game_obj = Games(gameform.name.data, gameform.genre.data, " ".join(gameform.pf.data),
+                             gameform.desc.data, gameform.pub.data, str(gameform.r_date.data.year), str(gameform.price.data), )
+            game_obj.pack()
+            print(game_obj)
+            flash(gameform.name.data+" added successfully", category="success")
+            return redirect(url_for("admin_home_page"))
+        if gameform.errors != {}:
+            # Validation errors
+            for err_msg in gameform.errors.values():
+                flash(f'Error : {err_msg}', category="danger")
+
+        return redirect(url_for("admin_home_page"))
+
+    if request.method == "GET":
+        games = Games.get_all_games()
+        return render_template('admin_home.html', items=games, gameform=gameform)
+
+
+@login_required
+@app.route('/admin/edit/<name>', methods=['GET', 'POST'])
+def edit_page(name):
+
+    gameEditForm = GameEditForm()
+    rrn = Games.get_rrn(name)
+    game = Games.get(rrn)
+    print(Games.get_rrn(name))
+    if gameEditForm.validate_on_submit():  # validates the user input using the validators and then just returns true when the form is submitted
+        game_obj = Games(gameEditForm.name.data, gameEditForm.genre.data, " ".join(gameEditForm.pf.data),
+                         gameEditForm.desc.data, gameEditForm.pub.data, str(gameEditForm.r_date.data), str(gameEditForm.price.data), )
+        game_obj.modify(rrn, gameEditForm.og_name.data)
+        flash("Changes saved successfull", category="success")
+        return redirect(url_for("admin_home_page"))
+    if gameEditForm.errors != {}:
+        # Validation errors
+        for err_msg in gameEditForm.errors.values():
+            flash(f'Error : {err_msg}', category="danger")
+
+    return render_template('edit_item.html', item=game, gameEditForm=gameEditForm)

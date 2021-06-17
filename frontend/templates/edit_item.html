@@ -1,0 +1,45 @@
+{% extends 'base2.html' %}
+
+{% block title%}
+Edit page
+{% endblock %}
+
+{%block content %}
+<div class="container col-10" style="padding:2rem;margin-top: 2rem; border: 1px #3b3b3b solid; border-radius: 0.5rem;">
+    <h4>Edit game details here : </h4>
+    <br>
+
+    <form method="POST">
+        {{ gameEditForm.hidden_tag() }}
+
+        {{gameEditForm.og_name(type="hidden", value=item.name)}}
+
+        {{ gameEditForm.name.label() }}
+        {{ gameEditForm.name(class="form-control",value=item.name)}}
+
+        {{ gameEditForm.genre.label() }}
+        {{ gameEditForm.genre(class="form-control", value=item.genre)}}
+
+        {{ gameEditForm.pf.label() }}
+        {{ gameEditForm.pf()}}
+
+        {{ gameEditForm.desc.label() }}
+        {{ gameEditForm.desc(class="form-control" ,value=item.desc)}}
+
+        {{ gameEditForm.pub.label() }}
+        {{ gameEditForm.pub(class="form-control" ,value=item.pub)}}
+
+        {{ gameEditForm.price.label() }}
+        {{ gameEditForm.price(class="form-control", value=item.price)}}
+
+        {{ gameEditForm.r_date.label() }}
+        {{ gameEditForm.r_date(class="form-control", value=item.r_date)}}
+
+
+        <br>
+        {{ gameEditForm.submit( class="btn btn-outline-danger btn-block")}}
+    </form>
+
+</div>
+
+{% endblock%}

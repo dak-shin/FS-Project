@@ -44,9 +44,11 @@ class Games:
 
     @staticmethod
     def get_offsets(rrn):
+        rrn = int(rrn)
         i_file = open("./text files/index.txt", "r")
         lines = i_file.readlines()
         rrns = [int(line.split('|')[0]) for line in lines]
+        #print(rrn, rrns)
         if rrn in rrns:
             i = rrns.index(rrn)
             offset = [int(line.split('|')[1]) for line in lines][i]
@@ -69,6 +71,7 @@ class Games:
 
     @staticmethod
     def get(rrn):
+        rrn = int(rrn)
         file, i_file, sec_file = Games.open_files("r")
 
         if Games.get_offsets(rrn) != -1:
@@ -102,6 +105,17 @@ class Games:
             return 1 if name.lower().strip() in name_arr else 0
         else:
             return 0
+
+    @staticmethod
+    def get_rrn(name):
+        with open("./text files/sec_index.txt", 'r') as file:
+            records = file.readlines()
+            inds = [record.split("|")[0] for record in records]
+            names = [record.split("|")[1].strip() for record in records]
+            if name in names:
+                return inds[names.index(name)]
+            else:
+                raise Exception(name, names)
 
     @staticmethod
     # returns 1 if the game name is already there else 0
@@ -150,6 +164,7 @@ class Games:
 
     def pack(self):
 
+        Games.count = get_game_count()
         if Games.mode == 1:  # append
             file,  i_file, sec_file = Games.open_files("a")
 
@@ -239,7 +254,7 @@ class Games:
 
         #print("Game has been deleted successfully")
 
-    def modify(self, rrn, info_arr):
+    def modify(self, rrn, og_name):
 
         name_offset = Games.get_offsets(rrn)
         file, i_file, sec_file = Games.open_files("r")
@@ -252,7 +267,7 @@ class Games:
         g_name_len = len(game_record)
         game_name = game_record.split("|")[1]
 
-        name, gen, pf, desc, pub, r_date = info_arr
+        name, gen, pf, desc, pub, r_date, price = self.name, self.genre, self.pf, self.desc, self.pub, self.r_date, self.price
 
         g_name_mod = "|"+name+"|"+gen+"|"+pf+"|" + \
             desc+"|"+pub+"|"+r_date+"|"+self.price
@@ -262,8 +277,8 @@ class Games:
 
             # Delete the old record and just enter a new record into the file
 
-            Games.delete(self.name)
-            game_obj = Games(name, gen, pf, desc, pub, r_date)
+            Games.delete(og_name)
+            game_obj = Games(name, gen, pf, desc, pub, r_date, price)
             game_obj.pack()
 
         else:
@@ -368,5 +383,86 @@ class Users(UserMixin):
                 password = [record.split("|")[2] for record in records][index]
                 user_id = [record.split("|")[0] for record in records][index]
                 return Users(user_id, username, password)
+            else:
+                return None
+
+
+class Admin(UserMixin):
+
+    admin_count = 0
+
+    def __init__(self, id, username, password):
+        self.id = id
+        self.username = username
+        self.password = password
+
+    def pack(self):
+        user_rec = str(self.id)+"|"+self.username.lower() + \
+            "|"+self.password + "\n"
+        with open("./text files/admins.txt", "a") as user_file:
+            user_file.write(user_rec)
+            Admin.admin_count = Admin.admin_count + 1
+            with open("./text files/admin_count.txt", "w") as count_file:
+                count_file.write(str(Admin.admin_count))
+            return 1
+
+    @staticmethod
+    def get_count():
+        with open("./text files/admin_count.txt", "r") as file:
+            temp = file.readline()
+            new_id = int(temp) if temp else 1
+            Admin.admin_count = new_id
+        return new_id
+
+    @staticmethod
+    def check_username(username):
+        with open("./text files/admins.txt", "r") as user_file:
+            records = user_file.readlines()
+            usernames = [record.split("|")[1] for record in records]
+            if username in usernames:
+                return True
+            else:
+                return False
+
+    @staticmethod
+    def check_password(username, password):
+        with open("./text files/admins.txt", "r") as user_file:
+            records = user_file.readlines()
+            usernames = [record.split("|")[1] for record in records]
+            if username.lower() in usernames:
+                index = usernames.index(username.lower())
+                pw = [record.split("|")[2] for record in records][index]
+                if password == pw:
+                    return True
+                else:
+                    raise Exception(pw, password)
+                    return False
+            else:
+                raise Exception(usernames, username)
+
+    @staticmethod
+    def get(user_id):
+        user_id = int(user_id)
+        with open("./text files/admins.txt", "r") as user_file:
+            records = user_file.readlines()
+            userids = [int(record.split("|")[0]) for record in records]
+            if user_id in userids:
+                index = userids.index(user_id)
+                password = [record.split("|")[0] for record in records][index]
+                username = [record.split("|")[1] for record in records][index]
+                return Admin(user_id, username, password)
+            else:
+                return None
+
+    @staticmethod
+    def get_user_by_name(username):
+        with open("./text files/admins.txt", "r") as user_file:
+            records = user_file.readlines()
+            usernames = [record.split("|")[1] for record in records]
+            if username in usernames:
+                index = usernames.index(username)
+                password = [record.split("|")[2] for record in records][index]
+                user_id = [record.split("|")[0] for record in records][index]
+                return Admin(user_id, username, password)
             else:
                 return None
