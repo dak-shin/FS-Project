@@ -115,7 +115,7 @@ class Games:
             if name in names:
                 return inds[names.index(name)]
             else:
-                raise Exception(name, names)
+                raise Exception(name, names, records)
 
     @staticmethod
     # returns 1 if the game name is already there else 0
@@ -255,6 +255,7 @@ class Games:
         #print("Game has been deleted successfully")
 
     def modify(self, rrn, og_name):
+        rrn = int(rrn)
 
         name_offset = Games.get_offsets(rrn)
         file, i_file, sec_file = Games.open_files("r")

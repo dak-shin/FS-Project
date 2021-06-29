@@ -2,7 +2,7 @@ from .app import app
 from flask import render_template, redirect, url_for, flash, request
 from .model import Games, Users, check_duplicate_games, Admin
 from flask_login import login_user, logout_user, current_user, login_required
-from .forms import RegisterForm, LoginForm, PurchaseForm, GameForm, GameEditForm
+from .forms import RegisterForm, LoginForm, PurchaseForm, GameForm, GameEditForm, GameDeleteForm
 
 
 @app.route("/")
@@ -143,20 +143,22 @@ def admin_home_page():
 @login_required
 @app.route('/admin/edit/<name>', methods=['GET', 'POST'])
 def edit_page(name):
-
+    edited_item = request.form.get('og_name')
+    print(edited_item)
     gameEditForm = GameEditForm()
     rrn = Games.get_rrn(name)
     game = Games.get(rrn)
     print(Games.get_rrn(name))
-    if gameEditForm.validate_on_submit():  # validates the user input using the validators and then just returns true when the form is submitted
-        game_obj = Games(gameEditForm.name.data, gameEditForm.genre.data, " ".join(gameEditForm.pf.data),
-                         gameEditForm.desc.data, gameEditForm.pub.data, str(gameEditForm.r_date.data), str(gameEditForm.price.data), )
-        game_obj.modify(rrn, gameEditForm.og_name.data)
-        flash("Changes saved successfull", category="success")
-        return redirect(url_for("admin_home_page"))
-    if gameEditForm.errors != {}:
-        # Validation errors
-        for err_msg in gameEditForm.errors.values():
-            flash(f'Error : {err_msg}', category="danger")
+    if edited_item:
+        if gameEditForm.validate_on_submit():  # validates the user input using the validators and then just returns true when the form is submitted
+            game_obj = Games(gameEditForm.name.data, gameEditForm.genre.data, " ".join(gameEditForm.pf.data),
+                             gameEditForm.desc.data, gameEditForm.pub.data, str(gameEditForm.r_date.data), str(gameEditForm.price.data), )
+            game_obj.modify(rrn, gameEditForm.og_name.data)
+            flash("Changes saved successfull", category="success")
+            return redirect(url_for("admin_home_page"))
+        if gameEditForm.errors != {}:
+            # Validation errors
+            for err_msg in gameEditForm.errors.values():
+                flash(f'Error : {err_msg}', category="danger")
 
     return render_template('edit_item.html', item=game, gameEditForm=gameEditForm)
