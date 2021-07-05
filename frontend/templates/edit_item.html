@@ -37,9 +37,11 @@ Edit page
 
 
         <br>
-        {{ gameEditForm.submit( class="btn btn-outline-primary btn-block")}}
+        {{ gameEditForm.submit1( class="btn btn-outline-primary btn-block")}}
         <br>
-
+        {{ game_delForm.hidden_tag()}}
+        {{game_delForm.game_name(type="hidden", value=item.name) }}
+        {{ game_delForm.submit2( class="btn btn-outline-danger btn-block")}}
 
     </form>
 

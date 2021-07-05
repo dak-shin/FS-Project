@@ -133,6 +133,8 @@ class Games:
             for game in all_games:
                 if game[0] != "$":
                     temp = game.strip().split("|")
+                    temp[7] = temp[7][0:temp[7].index(
+                        "%")] if "%" in temp[7] else temp[7]
                     game_obj = Games(
                         temp[1], temp[2], temp[3], temp[4], temp[5], temp[6], temp[7])
                     games_obj_arr.append(game_obj)
@@ -195,7 +197,7 @@ class Games:
 
     @staticmethod
     def delete(name):
-
+        name = name.lower()
         i = -1
 
         file = open("./text files/g_name.txt", "r")

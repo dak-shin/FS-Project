@@ -61,7 +61,7 @@ def login_page():
     if form.validate_on_submit():
         user = Users.get_user_by_name(form.username.data)
         if user and user.password.strip() == form.password.data.strip():
-            print(user.password, form.password.data)
+
             login_user(user)
 
             flash(
@@ -87,7 +87,6 @@ def logout_page():
 @login_required
 def library_page():
     items = Games.get_owned_games(current_user.id)
-    # print(list(items))
     return render_template("library.html", active_lib="active", items=list(items))
 
 
@@ -103,7 +102,6 @@ def admin_login_page():
     if form.validate_on_submit():
         user = Admin.get_user_by_name(form.username.data)
         if user and user.password.strip() == form.password.data.strip():
-            print(user.password, form.password.data)
             login_user(user)
             flash(
                 f"Logged in Successfully as admin !! Welcome {current_user.username}", category="success")
@@ -125,7 +123,7 @@ def admin_home_page():
             game_obj = Games(gameform.name.data, gameform.genre.data, " ".join(gameform.pf.data),
                              gameform.desc.data, gameform.pub.data, str(gameform.r_date.data.year), str(gameform.price.data), )
             game_obj.pack()
-            print(game_obj)
+
             flash(gameform.name.data+" added successfully", category="success")
             return redirect(url_for("admin_home_page"))
         if gameform.errors != {}:
@@ -143,22 +141,30 @@ def admin_home_page():
 @login_required
 @app.route('/admin/edit/<name>', methods=['GET', 'POST'])
 def edit_page(name):
-    edited_item = request.form.get('og_name')
-    print(edited_item)
+    game_delForm = GameDeleteForm()
     gameEditForm = GameEditForm()
+    edited_item = request.form.get('og_name')
     rrn = Games.get_rrn(name)
     game = Games.get(rrn)
-    print(Games.get_rrn(name))
-    if edited_item:
-        if gameEditForm.validate_on_submit():  # validates the user input using the validators and then just returns true when the form is submitted
+
+    if game_delForm.submit2.data and game_delForm.validate():
+        name = request.form.get('game_name')
+        Games.delete(name)
+        flash(name+" is deleted successfully!!", category="success")
+        return redirect(url_for("admin_home_page"))
+
+    if gameEditForm.submit1.data and gameEditForm.validate():
+        new_rrn = Games.get_rrn(edited_item)
+        if new_rrn:
             game_obj = Games(gameEditForm.name.data, gameEditForm.genre.data, " ".join(gameEditForm.pf.data),
                              gameEditForm.desc.data, gameEditForm.pub.data, str(gameEditForm.r_date.data), str(gameEditForm.price.data), )
+
             game_obj.modify(rrn, gameEditForm.og_name.data)
             flash("Changes saved successfull", category="success")
-            return redirect(url_for("admin_home_page"))
-        if gameEditForm.errors != {}:
-            # Validation errors
-            for err_msg in gameEditForm.errors.values():
-                flash(f'Error : {err_msg}', category="danger")
+        return redirect(url_for("admin_home_page"))
+    if gameEditForm.errors != {}:
+        # Validation errors
+        for err_msg in gameEditForm.errors.values():
+            flash(f'Error : {err_msg}', category="danger")
 
-    return render_template('edit_item.html', item=game, gameEditForm=gameEditForm)
+    return render_template('edit_item.html', item=game, gameEditForm=gameEditForm, game_delForm=game_delForm)

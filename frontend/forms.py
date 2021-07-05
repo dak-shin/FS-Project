@@ -50,7 +50,7 @@ class GameForm(FlaskForm):
     pub = StringField(label="Publisher", validators=[
                       DataRequired(), Length(min=2, max=30)])
     price = IntegerField(label="Price", validators=[DataRequired()])
-    r_date = DateField(label="Release Date", validators=[])
+    r_date = DateField(label="Release Date", validators=[DataRequired()])
 
     submit = SubmitField(label="Add Game")
 
@@ -65,15 +65,16 @@ class GameEditForm(FlaskForm):
     pf = MultiCheckboxField(label="Platforms Supported", choices=[(
         "PC", "PC"), ("playstation", "Playstation"), ("xbox", "Xbox")])
     desc = TextAreaField(label="Description", validators=[
-                         DataRequired(), Length(min=2, max=500)])
+        Length(min=2, max=500)])
     pub = StringField(label="Publisher", validators=[
                       DataRequired(), Length(min=2, max=30)])
     price = IntegerField(label="Price", validators=[DataRequired()])
-    r_date = DateField(label="Release Date", validators=[], format="%Y-%m-%d")
+    r_date = DateField(label="Release Date", validators=[
+                       DataRequired()], format="%Y-%m-%d")
 
-    submit = SubmitField(label="Save Changes")
+    submit1 = SubmitField(label="Save Changes")
 
 
 class GameDeleteForm(FlaskForm):
     game_name = StringField(label="game_name")
-    submit = SubmitField(label="Delete")
+    submit2 = SubmitField(label="Delete")
