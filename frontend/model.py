@@ -94,6 +94,30 @@ class Games:
         Games.close_files([file, i_file, sec_file])
 
     @staticmethod
+    def get_arr(rrn):
+        rrn = int(rrn)
+        file, i_file, sec_file = Games.open_files("r")
+
+        if Games.get_offsets(rrn) != -1:
+            name_offset = Games.get_offsets(rrn)
+            file.seek(name_offset, 0)
+            temp = file.readline().split("|")
+            g_name = [val.strip() for val in temp]
+
+            if g_name[1][0] != "$":
+                g_name[7] = g_name[7][0:g_name[7].index(
+                    "%")] if "%" in g_name[7] else g_name[7]
+                # print(g_name[7])
+                game_obj = Games(
+                    g_name[1], g_name[2], g_name[3], g_name[4], g_name[5], g_name[6], g_name[7])
+                print('Game found')
+                return [game_obj]
+        else:
+            print("Game not found\n")
+
+        Games.close_files([file, i_file, sec_file])
+
+    @staticmethod
     # returns 1 if the game name is already there else 0
     def check_for_duplicate_by_name(name):
         name_file = open("./text files/g_name.txt", "r")
@@ -111,11 +135,12 @@ class Games:
         with open("./text files/sec_index.txt", 'r') as file:
             records = file.readlines()
             inds = [record.split("|")[0] for record in records]
-            names = [record.split("|")[1].strip() for record in records]
-            if name in names:
-                return inds[names.index(name)]
+            names = [record.split("|")[1].strip().lower()
+                     for record in records]
+            if name.lower() in names:
+                return inds[names.index(name.lower())]
             else:
-                raise Exception(name, names, records)
+                return None
 
     @staticmethod
     # returns 1 if the game name is already there else 0

@@ -35,6 +35,9 @@
                 <li class="nav-item {{ active_market }}">
                     <a class="nav-link" href="{{url_for('market_page')}}">Games</a>
                 </li>
+                {% block search%}
+
+                {% endblock %}
             </ul>
 
             {% if current_user.is_authenticated %}

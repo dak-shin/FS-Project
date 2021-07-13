@@ -1,8 +1,9 @@
+from flask_wtf import form
 from .app import app
 from flask import render_template, redirect, url_for, flash, request
 from .model import Games, Users, check_duplicate_games, Admin
 from flask_login import login_user, logout_user, current_user, login_required
-from .forms import RegisterForm, LoginForm, PurchaseForm, GameForm, GameEditForm, GameDeleteForm
+from .forms import RegisterForm, LoginForm, PurchaseForm, GameForm, GameEditForm, GameDeleteForm, SearchForm
 
 
 @app.route("/")
@@ -16,9 +17,11 @@ def home_page():
 def market_page():
 
     purchase_form = PurchaseForm()
+    search_form = SearchForm()
+    message = ""
 
     if request.method == "POST":
-        if purchase_form.validate_on_submit():
+        if purchase_form.submit.data and purchase_form.validate():
             purchased_item = request.form.get('purchased_item')
             if check_duplicate_games(current_user.id, purchased_item):
                 flash(
@@ -29,10 +32,16 @@ def market_page():
                       category='success')
         return redirect(url_for('market_page'))
 
+    games = Games.get_all_games()
+
     if request.method == "GET":
-        games = Games.get_all_games()
-        #owned_games = Item.query.filter_by(owner=current_user.id)
-        return render_template('market.html', items=games, active_market="active", purchase_form=purchase_form)
+        if request.args.get('game_name', None):
+            rrn = Games.get_rrn(request.args["game_name"])
+            if rrn:
+                games = Games.get_arr(rrn)
+            else:
+                message = "No game found"
+    return render_template('market.html', items=games, active_market="active", purchase_form=purchase_form, search_form=search_form, message=message)
 
 
 @app.route('/register', methods=['GET', 'POST'])

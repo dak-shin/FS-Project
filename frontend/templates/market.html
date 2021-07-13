@@ -4,6 +4,22 @@
 Market
 {% endblock %}
 
+{% block search %}
+<li class="nav-item {{ active_home }}" style="margin-left: 5px; ">
+    <form method="GET" class="form-register" style="color:white">
+        <div class="input-group mb-3">
+
+            {{ search_form.game_name(class="form-control", placeholder="Dwight", type="text",
+            style="border-top-left-radius: 0.5rem; border-bottom-left-radius: 0.5rem;") }}
+            <div class="input-group-append">
+                {{ search_form.submit(class="btn btn-outline-secondary") }}
+            </div>
+        </div>
+    </form>
+</li>
+
+{% endblock %}
+
 {% block content %}
 
 
@@ -14,6 +30,7 @@ Market
         <br>
         <div class="container">
             <div class="row g-2">
+                {% if items %}
                 {% for item in items %}
                 <div class="col-6 ">
                     {% include 'includes/items_modal.html' %}
@@ -52,7 +69,12 @@ Market
                     </div>
                 </div>
                 {% endfor %}
+
+                {% else %}
+                <H3>{{ message }}</H3>
+                {% endif %}
             </div>
+
         </div>
     </div>
 </div>

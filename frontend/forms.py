@@ -24,6 +24,11 @@ class LoginForm(FlaskForm):
     submit = SubmitField(label="Login")
 
 
+class SearchForm(FlaskForm):
+    game_name = StringField(label="game_name", validators=[DataRequired()])
+    submit = SubmitField(label="Search")
+
+
 class PurchaseForm(FlaskForm):
     submit = SubmitField(label="Purchase")
 
