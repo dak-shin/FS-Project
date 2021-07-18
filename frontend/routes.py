@@ -37,10 +37,14 @@ def market_page():
     if request.method == "GET":
         if request.args.get('game_name', None):
             rrn = Games.get_rrn(request.args["game_name"])
+            temp = request.args["game_name"]
             if rrn:
                 games = Games.get_arr(rrn)
+                flash(
+                    f"{temp} found !!", category="success")
             else:
-                message = "No game found"
+                flash(
+                    f"{temp} is not found!!", category="danger")
     return render_template('market.html', items=games, active_market="active", purchase_form=purchase_form, search_form=search_form, message=message)
 
 
