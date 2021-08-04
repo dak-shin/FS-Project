@@ -1,3 +1,3 @@
-#Online Video Game store 
+# Online Video Game store 
 
 A video game store that allows users to view available games and their details like price, genre, supported platforms and buy them. This project is made using the python micro-framework flask. It's frontend is built using HTML and the CSS framework Bootstrap. Backend is completely implemented using text files where the games and their details are stored in the form of records followed by primary and secondary files which assist in accessing and retrieving them. This also provides an admin side from where we can add newly released games, update details of existing games and remove them from the store as well.
